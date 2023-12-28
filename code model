@@ -1,0 +1,92 @@
+from math import e
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+G = 6.67430 * 10  (-11)
+a = 360_000
+b = 180_000
+Mz = 5.2915793 * 10  22
+Pa = 1000_000
+Sa1 = 1
+Wa = 1000
+
+
+m = 125.769 * 10  3
+mf = 127 * 10  3
+dm = 64.745 * 2 + 1.125 * 2 + 98.683
+dt = 1
+R = 14_000_000
+Velocity = 0
+altitude = 0
+dV = 0
+
+
+def Ftyag(G, rm, Mz, R):
+    return G * (rm * Mz) / R  2
+
+
+def Pn(alt):
+    return 1000_000 * e  (-alt / 5000)
+
+
+h_graph = np.array([])
+velocity_graph = np.array([])
+mass_graph = np.array([])
+time_graph = np.array([0])
+while mf >= 0:
+    if altitude >= 75000:
+        break
+    mf -= dm * dt
+    rm = mf + m
+
+    Ft = Ftyag(G, rm, Mz, R)
+    P = dm * dt * Wa + (Pa - Pn(R - 14_000_000)) * Sa1
+    if altitude >= 36000:
+        P = 0
+        m = 125.769 * 10  3 - 4 * 2 * 10  3
+        rm += dm * dt
+    dV = dt * (P + Ft) / rm
+    Velocity += dV
+    altitude += Velocity * dt
+
+    R += altitude
+
+    h_graph = np.append(h_graph, R)
+    velocity_graph = np.append(velocity_graph, Velocity)
+    mass_graph = np.append(mass_graph, rm)
+    time_graph = np.append(time_graph, time_graph[-1] + dt)
+
+
+for _ in range(10):
+    V = (G * Mz * (2 / b - 1 / a)) ** 0.5
+    velocity_graph = np.append(velocity_graph, Velocity)
+    h_graph = np.append(h_graph, R)
+    mass_graph = np.append(mass_graph, m + mf)
+    time_graph = np.append(time_graph, time_graph[-1] + dt)
+
+
+TIME = list(range(150))
+time_graph = time_graph[1:]
+
+
+plt.plot(TIME, velocity_graph[0:len(TIME)])
+plt.ylabel(r'$dV$')
+plt.xlabel(r'$t$')
+plt.title(r'Изменение скорости ракеты от времени')
+plt.grid(True)
+plt.show()
+
+plt.plot(TIME, [x - 14_000_000 for x in h_graph][0:len(TIME)])
+plt.ylabel(r'$H$')
+plt.xlabel(r'$t$')
+plt.title(r'Изменение высоты от времени')
+plt.grid(True)
+plt.show()
+
+plt.plot(TIME, mass_graph[0:len(TIME)])
+plt.ylabel(r'$М$')
+plt.xlabel(r'$t$')
+plt.title(r'Изменение массы ракеты от времени')
+plt.grid(True)
+plt.show()
